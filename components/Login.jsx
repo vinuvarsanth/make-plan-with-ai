@@ -27,7 +27,7 @@ export default function Login() {
         </Text>
         <Text
           style={{
-            fontFamily: "outfit",
+            fontFamily: "outfit-medium",
             fontSize: 17,
             textAlign: "center",
             color: Colors.GRAY,
@@ -38,8 +38,9 @@ export default function Login() {
           must-see landmarks to off-the-beaten-path treasures, experience
           personalized adventures crafted just for you.
         </Text>
-        <TouchableOpacity style={styles.button}
-        onPress={()=>router.push('/auth/Sign-in')}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/auth/Sign-in")}
         >
           <Text
             style={{
