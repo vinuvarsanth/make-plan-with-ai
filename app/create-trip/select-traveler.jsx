@@ -81,7 +81,7 @@ export default function SelectTraveler() {
                 marginVertical: 10,
               }}
             >
-              <OptionCard option={item} selectedTraveler={selectedTraveler} />
+              <OptionCard option={item} selectedOption={selectedTraveler} />
             </TouchableOpacity>
           )}
           keyExtractor={(item, index) => index.toString()} // Added a keyExtractor for better performance
