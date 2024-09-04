@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Colors } from '../../constants/Colors';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -7,11 +7,13 @@ import { auth, db } from './../../configs/FirebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import UserTripList from '../../components/MyTrips/UserTripList';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 export default function Mytrip() {
   const [userTrips, setUserTrips] = useState([]);
   const user = auth.currentUser;
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -36,12 +38,20 @@ export default function Mytrip() {
     }
   };
 
+  const handleAddTrip = () => {
+    console.log('Add trip icon clicked, navigating...');
+    router.push('/create-trip/search-place');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.header}>
           <Text style={styles.headerText}>My Trip</Text>
-          <MaterialIcons name="add-circle-outline" size={35} color="black" />
+          {/* Add Pressable to make the icon clickable */}
+          <Pressable onPress={handleAddTrip}>
+            <MaterialIcons name="add-circle-outline" size={35} color="black" />
+          </Pressable>
         </View>
 
         {loading && <ActivityIndicator size="large" color={Colors.PRIMARY} />}
