@@ -27,7 +27,7 @@ export default function SignUp() {
       ToastAndroid.show('Please fill all the details to create an account', ToastAndroid.LONG);
       return;
     }
-
+4
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
