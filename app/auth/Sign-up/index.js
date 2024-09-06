@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ToastAndroid } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ToastAndroid, ScrollView } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -15,6 +15,8 @@ export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [address, setAddress] = useState('');
 
   useEffect(() => {
     navigation.setOptions({
@@ -23,19 +25,22 @@ export default function SignUp() {
   }, []);
 
   const OnCreateAccount = async () => {
-    if (!email || !password || !fullName) {
+    if (!email || !password || !fullName || !phoneNumber || !address) {
       ToastAndroid.show('Please fill all the details to create an account', ToastAndroid.LONG);
       return;
     }
-4
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Save additional user data to Firestore
+      // Save all user data to Firestore
       await setDoc(doc(db, "users", user.uid), {
         fullName: fullName,
         email: email,
+        phoneNumber: phoneNumber,
+        address: address,
+        createdAt: new Date(),
         // Add more fields if needed
       });
 
@@ -47,78 +52,103 @@ export default function SignUp() {
 
   return (
     <View style={styles.container}>
-      <View>
-        {/* Back Button */}
-        <TouchableOpacity onPress={() => router.back()}>
-          <AntDesign name="back" size={24} color="black" style={styles.backButton} />
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View>
+          {/* Back Button */}
+          <TouchableOpacity onPress={() => router.back()}>
+            <AntDesign name="back" size={24} color="black" style={styles.backButton} />
+          </TouchableOpacity>
 
-        {/* Title */}
-        <Text style={styles.title}>Create New Account</Text>
+          {/* Title */}
+          <Text style={styles.title}>Create New Account</Text>
 
-        {/* User Full Name */}
-        <View style={styles.inputContainer}>
-          <Text>Full Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Full Name"
-            onChangeText={(value) => setFullName(value)}
-          />
+          {/* User Full Name */}
+          <View style={styles.inputContainer}>
+            <Text>Full Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Full Name"
+              onChangeText={(value) => setFullName(value)}
+            />
+          </View>
+
+          {/* Email */}
+          <View style={styles.inputContainer}>
+            <Text>Email</Text>
+            <TextInput
+              style={styles.input}
+              onChangeText={(value) => setEmail(value)}
+              placeholder="Enter Email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+
+          {/* Password */}
+          <View style={styles.inputContainer}>
+            <Text>Password</Text>
+            <TextInput
+              secureTextEntry={true}
+              style={styles.input}
+              onChangeText={(value) => setPassword(value)}
+              placeholder="Enter Password"
+            />
+          </View>
+
+          {/* Phone Number */}
+          <View style={styles.inputContainer}>
+            <Text>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Phone Number"
+              keyboardType="phone-pad"
+              onChangeText={(value) => setPhoneNumber(value)}
+            />
+          </View>
+
+          {/* Address */}
+          <View style={styles.inputContainer}>
+            <Text>Address</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Address"
+              onChangeText={(value) => setAddress(value)}
+            />
+          </View>
+
+          {/* Create Account Button */}
+          <TouchableOpacity
+            style={styles.createButton}
+            onPress={OnCreateAccount}
+          >
+            <Text style={styles.createButtonText}>Create Account</Text>
+          </TouchableOpacity>
+
+          {/* Already have an Account Button */}
+          <TouchableOpacity
+            onPress={() => router.replace('/auth/Sign-in')}
+            style={styles.signInButton}
+          >
+            <Text style={styles.signInButtonText}>Already have an Account? Sign here.</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Email */}
-        <View style={styles.inputContainer}>
-          <Text>Email</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={(value) => setEmail(value)}
-            placeholder="Enter Email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        {/* Password */}
-        <View style={styles.inputContainer}>
-          <Text>Password</Text>
-          <TextInput
-            secureTextEntry={true}
-            style={styles.input}
-            onChangeText={(value) => setPassword(value)}
-            placeholder="Enter Password"
-          />
-        </View>
-
-        {/* Create Account Button */}
-        <TouchableOpacity
-          style={styles.createButton}
-          onPress={OnCreateAccount}
-        >
-          <Text style={styles.createButtonText}>Create Account</Text>
-        </TouchableOpacity>
-
-        {/* Already have an Account Button */}
-        <TouchableOpacity
-          onPress={() => router.replace('/auth/Sign-in')}
-          style={styles.signInButton}
-        >
-          <Text style={styles.signInButtonText}>Already have an Account? Sign here.</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Footer Message */}
-      <Text style={styles.footerText}>© 2024 Your Company Name. All rights reserved.</Text>
+        {/* Footer Message */}
+        <Text style={styles.footerText}>© 2024 Your Company Name. All rights reserved.</Text>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: Colors.WHITE,
+    justifyContent: 'space-between',
+  },
+  scrollContent: {
     padding: 25,
     paddingTop: 50,
-    backgroundColor: Colors.WHITE,
-    height: '100%',
-    justifyContent: 'space-between',
   },
   backButton: {
     marginBottom: 25,
