@@ -1,21 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { signOut } from 'firebase/auth';
-import { auth, db } from '../../configs/FirebaseConfig';
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { useRouter } from "expo-router";
+import { signOut } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import React, { useEffect, useState } from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { auth, db } from "../../configs/FirebaseConfig";
 
 export default function Profile() {
   const router = useRouter();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
+  const [editMode, setEditMode] = useState({
+    fullName: false,
+    email: false,
+    phoneNumber: false,
+    address: false,
+  });
   const [updatedUserData, setUpdatedUserData] = useState({
-    fullName: '',
-    email: '',
-    phoneNumber: '',
-    address: '',
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    address: "",
+    profileImageUrl: "",
   });
 
   useEffect(() => {
@@ -27,7 +41,7 @@ export default function Profile() {
 
         if (docSnap.exists()) {
           setUserData(docSnap.data());
-          setUpdatedUserData(docSnap.data()); // initialize with existing data
+          setUpdatedUserData(docSnap.data());
         } else {
           console.log("No such document!");
         }
@@ -43,15 +57,15 @@ export default function Profile() {
   const handleLogout = () => {
     signOut(auth)
       .then(() => {
-        router.replace('/auth/Sign-in');
+        router.replace("/auth/Sign-in");
       })
       .catch((error) => {
         console.error("Logout Error: ", error);
       });
   };
 
-  const handleEditToggle = () => {
-    setEditMode(!editMode);
+  const handleEditToggle = (field) => {
+    setEditMode({ ...editMode, [field]: !editMode[field] });
   };
 
   const handleSave = async () => {
@@ -59,8 +73,13 @@ export default function Profile() {
     if (user) {
       const docRef = doc(db, "users", user.uid);
       await updateDoc(docRef, updatedUserData);
-      setUserData(updatedUserData);  // Update the local state with the new data
-      setEditMode(false); // Exit edit mode
+      setUserData(updatedUserData);
+      setEditMode({
+        fullName: false,
+        email: false,
+        phoneNumber: false,
+        address: false,
+      });
     }
   };
 
@@ -75,89 +94,109 @@ export default function Profile() {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        <Text style={styles.title}>Your Profile</Text>
+        <View style={styles.imageContainer}>
+          {userData.profileImageUrl ? (
+            <Image
+              source={{ uri: userData.profileImageUrl }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <Image
+              source={require("../../assets/images/profile.jpg")}
+              style={styles.profileImage}
+            />
+          )}
+        </View>
 
-        {userData ? (
-          <>
-            <View style={styles.profileRow}>
-              <Text style={styles.profileLabel}>Full Name:</Text>
-              {editMode ? (
-                <TextInput
-                  style={styles.input}
-                  value={updatedUserData.fullName}
-                  onChangeText={(value) => setUpdatedUserData({ ...updatedUserData, fullName: value })}
-                />
-              ) : (
-                <Text style={styles.profileDetail}>{userData.fullName}</Text>
-              )}
-              <TouchableOpacity onPress={handleEditToggle}>
-                <AntDesign name="edit" size={24} color="#007AFF" />
-              </TouchableOpacity>
-            </View>
+          {/* Email */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Email</Text>
+          <Text style={styles.text}>{userData.email || "Not provided"}</Text>
+        </View>
+        
+        {/* Full Name */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Full Name</Text>
+          {editMode.fullName ? (
+            <TextInput
+              style={styles.input}
+              value={updatedUserData.fullName}
+              onChangeText={(text) =>
+                setUpdatedUserData({ ...updatedUserData, fullName: text })
+              }
+            />
+          ) : (
+            <Text style={styles.text}>
+              {userData.fullName || "Not provided"}
+            </Text>
+          )}
+          <TouchableOpacity
+            onPress={() => handleEditToggle("fullName")}
+            style={styles.editIcon}
+          >
+            <AntDesign name="edit" size={20} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
 
-            <View style={styles.profileRow}>
-              <Text style={styles.profileLabel}>Email:</Text>
-              {editMode ? (
-                <TextInput
-                  style={styles.input}
-                  value={updatedUserData.email}
-                  onChangeText={(value) => setUpdatedUserData({ ...updatedUserData, email: value })}
-                />
-              ) : (
-                <Text style={styles.profileDetail}>{userData.email}</Text>
-              )}
-              <TouchableOpacity onPress={handleEditToggle}>
-                <AntDesign name="edit" size={24} color="#007AFF" />
-              </TouchableOpacity>
-            </View>
+        {/* Phone Number */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Phone Number</Text>
+          {editMode.phoneNumber ? (
+            <TextInput
+              style={styles.input}
+              value={updatedUserData.phoneNumber}
+              onChangeText={(text) =>
+                setUpdatedUserData({ ...updatedUserData, phoneNumber: text })
+              }
+              keyboardType="phone-pad"
+            />
+          ) : (
+            <Text style={styles.text}>
+              {userData.phoneNumber || "Not provided"}
+            </Text>
+          )}
+          <TouchableOpacity
+            onPress={() => handleEditToggle("phoneNumber")}
+            style={styles.editIcon}
+          >
+            <AntDesign name="edit" size={20} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
 
-            {/* This is where the phone number field is different (no space between label and value) */}
-            <View style={[styles.profileRow, styles.phoneNumberRow]}>
-              <Text style={styles.profileLabel}>Phone Number:</Text>
-              {editMode ? (
-                <TextInput
-                  style={styles.input}
-                  value={updatedUserData.phoneNumber}
-                  onChangeText={(value) => setUpdatedUserData({ ...updatedUserData, phoneNumber: value })}
-                />
-              ) : (
-                <Text style={styles.profileDetail}>{userData.phoneNumber}</Text>
-              )}
-              <TouchableOpacity onPress={handleEditToggle}>
-                <AntDesign name="edit" size={24} color="#007AFF" />
-              </TouchableOpacity>
-            </View>
+        {/* Address */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Address</Text>
+          {editMode.address ? (
+            <TextInput
+              style={styles.input}
+              value={updatedUserData.address}
+              onChangeText={(text) =>
+                setUpdatedUserData({ ...updatedUserData, address: text })
+              }
+            />
+          ) : (
+            <Text style={styles.text}>
+              {userData.address || "Not provided"}
+            </Text>
+          )}
+          <TouchableOpacity
+            onPress={() => handleEditToggle("address")}
+            style={styles.editIcon}
+          >
+            <AntDesign name="edit" size={20} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
 
-            <View style={styles.profileRow}>
-              <Text style={styles.profileLabel}>Address:</Text>
-              {editMode ? (
-                <TextInput
-                  style={styles.input}
-                  value={updatedUserData.address}
-                  onChangeText={(value) => setUpdatedUserData({ ...updatedUserData, address: value })}
-                />
-              ) : (
-                <Text style={styles.profileDetail}>{userData.address}</Text>
-              )}
-              <TouchableOpacity onPress={handleEditToggle}>
-                <AntDesign name="edit" size={24} color="#007AFF" />
-              </TouchableOpacity>
-            </View>
+        {/* Save Button */}
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
 
-            {/* Save Button (only visible in edit mode) */}
-            {editMode && (
-              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>Save</Text>
-              </TouchableOpacity>
-            )}
-          </>
-        ) : (
-          <Text style={styles.profileDetail}>No user data available</Text>
-        )}
-
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Logout</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -166,15 +205,15 @@ export default function Profile() {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
-    backgroundColor: '#f0f4f8',
-    padding: 20,
+    justifyContent: "center",
+    backgroundColor: "#f0f4f8",
+    padding: 21,
   },
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderRadius: 10,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
@@ -182,75 +221,78 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     fontSize: 18,
-    color: '#333',
+    color: "#333",
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+  imageContainer: {
+    alignItems: "center",
     marginBottom: 20,
-    textAlign: 'center',
   },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between', // Adds space between label and value
-    marginBottom: 15,
-    borderBottomWidth: 1,
-    borderColor: '#e0e0e0',
-    paddingBottom: 10,
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
   },
-  phoneNumberRow: {
-    justifyContent: 'flex-start', // No space between label and value for phone number
+  inputContainer: {
+    marginBottom: 20,
+    position: "relative",
   },
-  profileLabel: {
+  label: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#666',
-    width: '40%',
-  },
-  profileDetail: {
-    fontSize: 16,
-    color: '#333',
-    width: '50%',
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 10,
   },
   input: {
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    backgroundColor: "#f9f9f9",
+    padding: 10,
     borderRadius: 5,
-    padding: 8,
-    width: '50%',
+    borderColor: "#ddd",
+    borderWidth: 1,
+    marginTop: 7,
+  },
+  text: {
+    fontSize: 16,
+    color: "#333",
+  },
+  editIcon: {
+    position: "absolute",
+    right: 10,
+    top: 10,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
   },
   saveButton: {
-    marginTop: 20,
+    flex: 1,
     paddingVertical: 12,
-    paddingHorizontal: 30,
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     borderRadius: 5,
-    alignSelf: 'center',
+    marginHorizontal: 5,
+    alignItems: "center",
   },
   saveButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   logoutButton: {
-    marginTop: 30,
+    flex: 1,
     paddingVertical: 12,
-    paddingHorizontal: 30,
-    backgroundColor: '#FF3B30',
+    backgroundColor: "#FF3B30",
     borderRadius: 5,
-    alignSelf: 'center',
+    marginHorizontal: 5,
+    alignItems: "center",
   },
   logoutButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
