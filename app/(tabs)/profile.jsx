@@ -2,7 +2,10 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import React, { useEffect, useState } from "react";
+import * as ImagePicker from 'expo-image-picker';
+
 import {
   Image,
   ScrollView,
@@ -12,25 +15,63 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { auth, db } from "../../configs/FirebaseConfig";
+import { auth, db, storage } from "../../configs/FirebaseConfig";
 
 export default function Profile() {
   const router = useRouter();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [image, setImage] = useState(null);
+  const [updatedUserData, setUpdatedUserData] = useState({
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    address: "",
+    profileImageUrl: ""
+  });
+
   const [editMode, setEditMode] = useState({
     fullName: false,
     email: false,
     phoneNumber: false,
     address: false,
   });
-  const [updatedUserData, setUpdatedUserData] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    address: "",
-    profileImageUrl: "",
-  });
+
+  // Image Picker Function
+  const onImagePick = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setImage(imageUri);
+
+      // Upload image to Firebase Storage
+      const imageUrl = await uploadImageToFirebase(imageUri);
+      setUpdatedUserData((prevData) => ({
+        ...prevData,
+        profileImageUrl: imageUrl,
+      }));
+    }
+  };
+
+  // Upload image to Firebase Storage
+  const uploadImageToFirebase = async (uri) => {
+    if (!uri) return null;
+    const user = auth.currentUser;
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    
+    const storageRef = ref(storage, `profileImages/${user.uid}`);
+    const snapshot = await uploadBytes(storageRef, blob);
+    
+    // Get the download URL for the image
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -94,26 +135,26 @@ export default function Profile() {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        <View style={styles.imageContainer}>
-          {userData.profileImageUrl ? (
-            <Image
-              source={{ uri: userData.profileImageUrl }}
-              style={styles.profileImage}
-            />
-          ) : (
+        <TouchableOpacity style={styles.imageContainer} onPress={onImagePick}>
+          {!image && !userData.profileImageUrl ? (
             <Image
               source={require("../../assets/images/profile.jpg")}
               style={styles.profileImage}
             />
+          ) : (
+            <Image
+              source={{ uri: image || userData.profileImageUrl }}
+              style={styles.profileImage}
+            />
           )}
-        </View>
+        </TouchableOpacity>
 
-          {/* Email */}
+        {/* Email */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Email</Text>
           <Text style={styles.text}>{userData.email || "Not provided"}</Text>
         </View>
-        
+
         {/* Full Name */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Full Name</Text>
@@ -226,72 +267,68 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 18,
+    fontWeight: "bold",
     color: "#333",
   },
   imageContainer: {
+    justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
   },
   profileImage: {
-    width: 120,
-    height: 120,
+    width: 140,
+    height: 180,
     borderRadius: 60,
+    borderWidth: 2,
+    borderColor: "#ddd",
   },
   inputContainer: {
-    marginBottom: 20,
-    position: "relative",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
   },
   label: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
+    marginRight: 10,
+    width: 120,
   },
   input: {
-    backgroundColor: "#f9f9f9",
-    padding: 10,
-    borderRadius: 5,
-    borderColor: "#ddd",
-    borderWidth: 1,
-    marginTop: 7,
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+    flex: 1,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
   },
   text: {
     fontSize: 16,
-    color: "#333",
+    flex: 1,
   },
   editIcon: {
-    position: "absolute",
-    right: 10,
-    top: 10,
+    marginLeft: 10,
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 20,
   },
   saveButton: {
-    flex: 1,
-    paddingVertical: 12,
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#007AFF",
+    padding: 10,
     borderRadius: 5,
-    marginHorizontal: 5,
-    alignItems: "center",
   },
   saveButtonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: "bold",
   },
   logoutButton: {
-    flex: 1,
-    paddingVertical: 12,
     backgroundColor: "#FF3B30",
+    padding: 10,
     borderRadius: 5,
-    marginHorizontal: 5,
-    alignItems: "center",
   },
   logoutButtonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: "bold",
   },
