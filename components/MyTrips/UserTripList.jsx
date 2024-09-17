@@ -3,13 +3,26 @@ import React from "react";
 import { Image, Text, View, TouchableOpacity } from "react-native";
 import { Colors } from "../../constants/Colors";
 import UserTripCard from "./UserTripCard";
+import { useRouter } from "expo-router";
 
 export default function UserTripList({ userTrips }) {
   if (!userTrips || userTrips.length === 0) {
     return null; // Return early if no trips
   }
 
-  const latestTripData = JSON.parse(userTrips[0]?.tripData);
+  // Reverse the trips array to show the most recent trip first
+  const reversedTrips = userTrips.slice().reverse();
+
+  // Safely parse trip data for the latest trip (now the first item in reversedTrips)
+  let latestTripData;
+  try {
+    latestTripData = JSON.parse(reversedTrips[0]?.tripData);
+  } catch (error) {
+    console.error('Error parsing tripData:', error);
+    return null; // Handle parsing error (if tripData is not valid JSON)
+  }
+
+  const router = useRouter();
 
   return (
     <View>
@@ -44,7 +57,7 @@ export default function UserTripList({ userTrips }) {
               fontSize: 20,
             }}
           >
-            {latestTripData.locationInfo?.name || 'Unknown Location'}
+            {latestTripData.locationInfo?.name ? latestTripData.locationInfo.name : 'Unknown Location'}
           </Text>
           <View style={{
             flexDirection: 'row', // Correctly apply flex direction
@@ -71,6 +84,7 @@ export default function UserTripList({ userTrips }) {
             </Text>
           </View>
           <TouchableOpacity
+            onPress={() => router.push({ pathname: '/trip-details', params: { trip: JSON.stringify(reversedTrips[0]) } })}
             style={{
               backgroundColor: Colors.PRIMARY,
               marginTop: 10,
@@ -89,7 +103,8 @@ export default function UserTripList({ userTrips }) {
           </TouchableOpacity>
         </View>
 
-        {userTrips.map((trip, index) => (
+        {/* Render all trips after the latest trip */}
+        {reversedTrips.map((trip, index) => (
           <UserTripCard trip={trip} key={index} />
         ))}
       </View>

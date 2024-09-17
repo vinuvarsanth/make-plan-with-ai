@@ -40,7 +40,7 @@ export default function Mytrip() {
 
   const handleAddTrip = () => {
     console.log('Add trip icon clicked, navigating...');
-    router.push('/create-trip/search-place');
+    router.push('/create-trip/search-cur-place');
   };
 
   return (

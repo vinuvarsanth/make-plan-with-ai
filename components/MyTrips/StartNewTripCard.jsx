@@ -8,7 +8,7 @@ export default function StartNewTripCard() {
   const router = useRouter();
 
   const handleNavigate = () => {
-    router.push('/create-trip/search-place');
+    router.push('/create-trip/search-cur-place');
   };
 
   return (

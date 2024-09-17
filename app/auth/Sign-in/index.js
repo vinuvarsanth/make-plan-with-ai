@@ -3,7 +3,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View, KeyboardAvoidingView, Platform } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from './../../../configs/FirebaseConfig';
 
@@ -29,31 +29,30 @@ export default function SignIn() {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
-        router.replace('/mytrip');
+        router.replace('/mytrip'); // No email passed to the Discover page
         console.log(user);
       })
       .catch((error) => {
         const errorMessage = error.message;
         ToastAndroid.show(errorMessage, ToastAndroid.LONG);
       });
-  }
+  };
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.WHITE }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1, backgroundColor: Colors.WHITE }}
+    >
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Main Content */}
-        <View>
-          {/* Back Button */}
+        <View style={styles.container}>
           <TouchableOpacity onPress={() => router.back()}>
             <AntDesign name="back" size={24} color="black" style={{ marginBottom: 25 }} />
           </TouchableOpacity>
 
-          {/* Modified Texts */}
           <Text style={styles.title}>Let's Sign You In</Text>
           <Text style={styles.subtitle}>Welcome Back</Text>
           <Text style={styles.subtitle}>You've been missed!</Text>
 
-          {/* Email */}
           <View style={{ marginTop: 20 }}>
             <Text style={styles.label}>Email</Text>
             <TextInput
@@ -65,7 +64,6 @@ export default function SignIn() {
             />
           </View>
 
-          {/* Password */}
           <View style={{ marginTop: 20 }}>
             <Text style={styles.label}>Password</Text>
             <TextInput
@@ -76,7 +74,6 @@ export default function SignIn() {
             />
           </View>
 
-          {/* Sign In Button */}
           <TouchableOpacity
             style={styles.signInButton}
             onPress={onSignIn}
@@ -84,21 +81,19 @@ export default function SignIn() {
             <Text style={styles.signInButtonText}>Sign In</Text>
           </TouchableOpacity>
 
-          {/* Create Account Button */}
           <TouchableOpacity
             onPress={() => router.replace('/auth/Sign-up')}
             style={{ padding: 10, marginTop: 20 }}
           >
             <Text style={styles.createAccountText}>Click here to Create a New Account...</Text>
           </TouchableOpacity>
+
+          <Text style={styles.footerMessage}>
+            © 2024 Your Company Name. All rights reserved.
+          </Text>
         </View>
       </ScrollView>
-
-      {/* Footer Message */}
-      <Text style={styles.footerMessage}>
-        © 2024 Your Company Name. All rights reserved.
-      </Text>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -106,6 +101,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 25,
     paddingTop: 50,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
   },
   title: {
     fontFamily: 'outfit-bold',
@@ -150,6 +149,6 @@ const styles = StyleSheet.create({
     color: Colors.GRAY,
     fontFamily: 'outfit',
     fontSize: 14,
-    marginBottom: 20,
+    marginTop: 20,
   }
 });

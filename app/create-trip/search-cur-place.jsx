@@ -5,21 +5,21 @@ import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplet
 import { Colors } from "../../constants/Colors";
 import { CreateTripContext } from "./../../context/CreateTripContext";
 
-export default function SearchPlace() {
+export default function SearchCurrentPlace() {
   const navigation = useNavigation();
-  const { tripData, setTripData } = useContext(CreateTripContext);
+  const { tripData, setTripData } = useContext(CreateTripContext); // Context for trip data
   const router = useRouter();
 
   useEffect(() => {
     navigation.setOptions({
-      headerShown: true,
-      headerTransparent: true,
-      headerTitle: "Search",
+      headerShown: true, 
+      headerTransparent: true, 
+      headerTitle: "Search", 
     });
   }, [navigation]);
 
   useEffect(() => {
-    console.log(tripData);
+    console.log(tripData); // Logs the current trip data whenever it changes
   }, [tripData]);
 
   return (
@@ -34,44 +34,35 @@ export default function SearchPlace() {
       <Text
         style={{
           fontSize: 18,
-          fontWeight: 'bold',
+          fontWeight: "bold",
           color: Colors.PRIMARY,
-          textAlign: 'center',
+          textAlign: "center",
           marginBottom: 1,
           lineHeight: 24,
           marginTop: 40,
         }}
       >
-        Discover your dream destination! Select the place where your next adventure begins.
+        Choose your city to find and map the nearest airports for flight options.
       </Text>
 
       <GooglePlacesAutocomplete
-        placeholder="Search Your Destination Place"
+        placeholder="Search Your Starting Place"
         fetchDetails={true}
-        onPress={(data, details = null) => {
-          const place = {
-            name: data.description,
-            coordinates: details?.geometry?.location,
-            photoRef: details?.photos?.[0]?.photo_reference,
-            url: details?.url,
-          };
+        onPress={(data) => {
+          // Logs the place description (place name)
+          console.log(data.description); 
 
-          console.log(data.description);
-          console.log(details?.geometry?.location);
-          console.log(details?.photos?.[0]?.photo_reference);
-          console.log(details?.url);
-
-          // Updating the trip data with destination info while keeping startPlace intact
+          // Updating the trip data with only the startPlace while keeping other data intact
           setTripData((prevTripData) => ({
-            ...prevTripData,
-            locationInfo: place,
+            ...prevTripData, // Keep existing tripData (like locationInfo)
+            startPlace: data.description, // Store only the place name as startPlace
           }));
 
           // Navigate to the next screen
-          router.push('/create-trip/select-traveler');
+          router.push("/create-trip/search-place");
         }}
         query={{
-          key: process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY, // Replace with your actual Google Places API key
+          key: process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY, // Use your Google Places API key
           language: "en",
         }}
         styles={{

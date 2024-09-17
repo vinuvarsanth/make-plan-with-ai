@@ -24,6 +24,7 @@ export default function GenerateTrip() {
     setLoading(true);
     const FINAL_PROMPT=AI_PROMPT
     .replace('{location}',tripData?.locationInfo?.name)
+    .replace('{startPlace}', tripData?.startPlace)  // Adding start place
     .replace('{totalDays}',tripData.totalNoOfDays)
     .replace('{totalNight}',tripData.totalNoOfDays-1)
     .replace('{totalNight}',tripData.totalNoOfDays-1)
