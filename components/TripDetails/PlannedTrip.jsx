@@ -1,9 +1,65 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { Colors } from "../../constants/Colors";
 
+// Function to search for place id from Google Places API by place name
+const searchPlaceId = async (placeName) => {
+  try {
+    const resp = await fetch(
+      `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(placeName)}&key=${process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY}`
+    );
+    const result = await resp.json();
+    return result.results[0]?.place_id;
+  } catch (error) {
+    console.error('Error searching place id:', error);
+    return null;
+  }
+};
+
+// Function to fetch photo reference from Google Places API using place id
+const getPhotoRef = async (placeId) => {
+  try {
+    const resp = await fetch(
+      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY}`
+    );
+    const result = await resp.json();
+    return result.result?.photos[0]?.photo_reference;
+  } catch (error) {
+    console.error('Error fetching photo reference:', error);
+    return null;
+  }
+};
+
 const PlacesToVisit = ({ details, dailyPlan }) => {
+  const [placeImages, setPlaceImages] = useState([]);
+
+  useEffect(() => {
+    const fetchPlaceImages = async () => {
+      try {
+        const imagePromises = details.map(async (place) => {
+          const placeId = await searchPlaceId(place.name);
+          if (placeId) {
+            const photoReference = await getPhotoRef(placeId);
+            return photoReference ? getPhotoUrl(photoReference) : null;
+          }
+          return null;
+        });
+
+        const imageUrls = await Promise.all(imagePromises);
+        setPlaceImages(imageUrls.filter(url => url)); // Remove null values
+      } catch (error) {
+        console.error('Error fetching place images:', error);
+      }
+    };
+
+    fetchPlaceImages();
+  }, [details]);
+
+  const getPhotoUrl = (photoReference) => {
+    return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY}`;
+  };
+
   if (!details || details.length === 0) return <Text>No Places Available</Text>;
 
   return (
@@ -13,7 +69,7 @@ const PlacesToVisit = ({ details, dailyPlan }) => {
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {details.map((place, index) => (
           <View key={index} style={styles.placeCard}>
-            <Image source={{ uri: place.image_url }} style={styles.placeImage} />
+            <Image source={{ uri: placeImages[index] }} style={styles.placeImage} />
             <View style={styles.placeDetails}>
               <Text style={styles.placeName}>{place.name}</Text>
               <Text style={styles.placeDescription}>{place.details}</Text>
@@ -58,7 +114,7 @@ const styles = StyleSheet.create({
   },
   placeCard: {
     marginBottom: 15,
-    backgroundColor: Colors.GR,
+    backgroundColor: Colors.LIGHT_GRAY,
     borderRadius: 10,
     overflow: "hidden",
     width: 250,
