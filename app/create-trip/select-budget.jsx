@@ -12,8 +12,7 @@ import OptionCard from "../../components/CreateTrip/OptionCard";
 import { Colors } from "../../constants/Colors";
 import { SelectBudgetOptions } from "../../constants/Options";
 import { CreateTripContext } from "../../context/CreateTripContext";
-import { db, auth } from "../../configs/FirebaseConfig"; // Import Firebase config and auth
-import { collection, addDoc } from "firebase/firestore"; // Import Firestore functions
+import { auth } from "../../configs/FirebaseConfig"; // Import Firebase auth
 
 export default function SelectBudget() {
   const navigation = useNavigation();
@@ -25,28 +24,6 @@ export default function SelectBudget() {
     if (!selectedOption) {
       ToastAndroid.show("Select Your Budget", ToastAndroid.LONG);
       return;
-    }
-
-    // Get the current user's email
-    const user = auth.currentUser;
-    const userEmail = user ? user.email : null;
-
-    // Store location info (name, lat, lon) and email in Firestore
-    try {
-      if (tripData?.locationInfo && userEmail) {
-        const location = tripData.locationInfo;
-        const docRef = await addDoc(collection(db, "destinations"), {
-          name: location.name,
-          latitude: location.coordinates.lat,
-          longitude: location.coordinates.lng,
-          email: userEmail, // Store user's email
-        });
-        console.log("Document written with ID: ", docRef.id);
-      } else {
-        console.error("No location data or user email found");
-      }
-    } catch (error) {
-      console.error("Error adding location to Firestore: ", error);
     }
 
     // Navigate to the next screen
@@ -113,7 +90,7 @@ export default function SelectBudget() {
         )}
       />
       <TouchableOpacity
-        onPress={onClickContinue} // Corrected the onPress handler
+        onPress={onClickContinue}
         style={{
           padding: 15,
           backgroundColor: Colors.PRIMARY,
