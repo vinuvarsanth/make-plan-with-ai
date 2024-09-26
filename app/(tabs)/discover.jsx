@@ -8,23 +8,30 @@ export default function Discover() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={[styles.squareButton, { backgroundColor: '#FF5252' }]}>
-        <MaterialIcons name="wb-sunny" size={40} color="white" />
-        <Text style={styles.label}>Weather</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: '#FF5252' }]}>
+          <MaterialIcons name="wb-sunny" size={40} color="white" />
+          <Text style={styles.buttonText}>Weather</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.squareButton, { backgroundColor: '#4CAF50' }]}
-        onPress={() => router.push('/Pages/HomeScreen')} // Use the correct path
-      >
-        <MaterialIcons name="android" size={40} color="white" />
-        <Text style={styles.label}>Chat-bot</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#4CAF50' }]}
+          onPress={() => router.push('/Pages/HomeScreen')} // Use the correct path
+        >
+          <MaterialIcons name="android" size={40} color="white" />
+          <Text style={styles.buttonText}>Chat-bot</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.squareButton, { backgroundColor: '#2196F3' }]}>
-        <MaterialIcons name="map" size={40} color="white" />
-        <Text style={styles.label}>Map</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, { backgroundColor: '#2196F3' }]}>
+          <MaterialIcons name="map" size={40} color="white" />
+          <Text style={styles.buttonText}>Map</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.button, { backgroundColor: '#9C27B0' }]}>
+          <MaterialIcons name="checklist" size={40} color="white" />
+          <Text style={styles.buttonText}>To-Do</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -32,28 +39,34 @@ export default function Discover() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 33,
-    backgroundColor: '#e0f7fa', // Light background
+    backgroundColor: '#f9f9f9', // Light gray background
+    justifyContent: 'center', // Center vertically
+    alignItems: 'center', // Center horizontally
   },
-  squareButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+  buttonContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '90%',
+  },
+  button: {
+    width: '40%',
+    height: 120,
+    borderRadius: 20, // Smoother corners
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 10,
+    margin: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
   },
-  label: {
-    fontSize: 14,
+  buttonText: {
+    fontSize: 18, // Slightly larger text
     color: 'white',
-    marginTop: 8,
+    marginTop: 10,
     textAlign: 'center',
     fontWeight: 'bold',
   },
